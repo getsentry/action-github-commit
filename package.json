@@ -1,0 +1,42 @@
+{
+  "name": "@getsentry/action-eslint-fix",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Lint and fix javascript",
+  "main": "lib/main.js",
+  "scripts": {
+    "build": "yarn tsc",
+    "format": "yarn prettier --write **/*.ts",
+    "lint": "yarn eslint src/**/*.ts",
+    "dist": "yarn build && yarn ncc build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/getsentry/action-eslint-fix.git"
+  },
+  "keywords": [
+    "actions",
+    "node",
+    "setup"
+  ],
+  "author": "getsentry",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.2.6",
+    "@actions/exec": "^1.0.4",
+    "@actions/github": "^4.0.0",
+    "@vercel/ncc": "^0.25.1"
+  },
+  "devDependencies": {
+    "@octokit/webhooks": "^7.18.1",
+    "@types/eslint": "^7.2.6",
+    "@types/node": "^12.7.12",
+    "@typescript-eslint/parser": "^4.9.1",
+    "eslint": "^7.15.0",
+    "eslint-config-prettier": "^7.0.0",
+    "eslint-config-sentry": "^1.47.0",
+    "eslint-plugin-prettier": "^3.2.0",
+    "prettier": "^2.2.1",
+    "typescript": "^4.1.2"
+  }
+}

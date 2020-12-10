@@ -1,0 +1,21 @@
+name: "build"
+on: pull_request
+
+jobs:
+  test: # make sure the action works on a clean machine without building
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+
+    # Setup node
+    - uses: actions/setup-node@v1
+    - name: build
+      run: |
+        yarn install
+        yarn dist
+
+    - name: Use current action
+      uses: ./
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
