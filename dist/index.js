@@ -48,8 +48,10 @@ function run() {
         try {
             const { owner, repo } = github.context.repo;
             const token = core.getInput('github-token');
+            const message = core.getInput('message');
             if (!token) {
-                core.debug(`Invalid GitHub token`);
+                core.setFailed(`GitHub token not found`);
+                return;
             }
             const octokit = github.getOctokit(token);
             let gitOutput = '';
@@ -87,7 +89,7 @@ function run() {
                         owner,
                         repo,
                         path,
-                        message: 'style(): Auto eslint fix',
+                        message,
                         sha: ghFileContent.sha,
                         content: Buffer.from(fileContent).toString('base64'),
                         branch: process.env.GITHUB_HEAD_REF,

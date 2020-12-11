@@ -7,8 +7,12 @@ branding:
 inputs:
   github-token:
     description: 'GitHub token'
-    required: true
+    required: false
     default: '${{ github.token }}'
+  message:
+    description: 'The commit message to use'
+    required: false
+    default: 'style(lint): Auto commit lint changes'
 runs:
   using: 'node12'
   main: 'dist/index.js'
