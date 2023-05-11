@@ -1,9 +1,9 @@
 {
-  "name": "@getsentry/action-eslint-fix",
+  "name": "@getsentry/action-github-commit",
   "version": "0.0.0",
   "private": true,
-  "description": "Lint and fix javascript",
-  "main": "lib/main.js",
+  "description": "commit to GitHub using the API",
+  "main": "dist/index.js",
   "scripts": {
     "build": "yarn tsc",
     "format": "yarn prettier --write **/*.ts",
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/getsentry/action-eslint-fix.git"
+    "url": "git+https://github.com/getsentry/action-github-commit.git"
   },
   "keywords": [
     "actions",
