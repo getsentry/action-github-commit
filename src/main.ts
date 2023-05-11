@@ -8,8 +8,8 @@ async function run(): Promise<void> {
   try {
     const {owner, repo} = github.context.repo;
     const token = core.getInput('github-token');
-    const message = core.getInput('message');
-    const ref = process.env.GITHUB_HEAD_REF;
+    const message = core.getInput('message') || 'Default commit message';
+    const ref = process.env.GITHUB_HEAD_REF || 'master';
 
     if (!token) {
       core.setFailed('GitHub token not found');
@@ -18,10 +18,14 @@ async function run(): Promise<void> {
 
     const octokit = github.getOctokit(token); // might fail with an auth error?
 
+
+    // Find updated file contents using the `git` cli.
+    // ===============================================
+
     let gitOutput = '';
     let gitError = '';
 
-    await exec('git', ['ls-files', '-m'], {
+    await exec('git', ['ls-files', '-om', '--exclude-standard'], {
       silent: true,
       listeners: {
         stdout: (data: Buffer) => {
@@ -41,50 +45,43 @@ async function run(): Promise<void> {
       return;
     }
 
+    core.debug('🐭🐭🐭🐭🐭');
+    core.debug(gitOutput);
+    core.debug('🐱🐱🐱🐱🐱');
+
     const files = gitOutput.split('\n');
-
+    const newContents = [];
     for (const path of files) {
-      try {
-        const {data: ghFileContent} = await octokit.rest.repos.getContent({
-          owner,
-          repo,
-          path,
-          ref,
-        });
-
-        if (!ghFileContent || Array.isArray(ghFileContent)) {
-          return;
-        }
-
-        const fileContent = fs.readFileSync(path);
-
-        // Commit eslint fixes
-        octokit.rest.repos.createOrUpdateFileContents({
-          owner,
-          repo,
-          path,
-          message,
-          sha: ghFileContent.sha,
-          content: Buffer.from(fileContent).toString('base64'),
-          branch: ref,
-        });
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          core.error(error);
-          core.setFailed(error);
-        } else {
-          console.log(error);
-          core.setFailed('catastrophe');
-        }
-      }
+      core.debug(`🐠🐠🐠🐠🐠 ${path}`);
+      const fileContent = fs.readFileSync(path);
+      newContents.push({
+        path,
+        mode: '100644' as const,
+        type: 'blob' as const,
+        content: Buffer.from(fileContent).toString('base64'),
+      })
     }
+
+
+    // Do a dance with the API.
+    // ========================
+    // Docs at docs.github.com/en/rest/git/trees but tbh I just asked ChatGPT
+    // and then made it as terse as I could. :shrug:
+
+    const g = octokit.rest.git;
+    const {data: {object: {sha: commit_sha}}} = await g.getRef({owner, repo, ref});
+    const {data: {tree: {sha: base_tree}}} = await g.getCommit({owner, repo, commit_sha});
+    const {data: {sha: tree}} = await g.createTree({owner, repo, base_tree, tree: newContents,});
+    const {data: {sha}} = await g.createCommit({owner, repo, message, tree, parents: [commit_sha]});
+    await g.updateRef({owner, repo, ref, sha,});
+
   } catch (error: unknown) {
     if (error instanceof Error) {
-      core.debug(error.stack || '');
+      core.error(error.stack || '');
       core.setFailed(error.message);
     } else {
       console.log(error);
-      core.setFailed('more catastrophe');
+      core.setFailed('catastrophe');
     }
   }
 }
