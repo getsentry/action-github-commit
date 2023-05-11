@@ -45,7 +45,7 @@ async function run(): Promise<void> {
 
     for (const path of files) {
       try {
-        const {data: ghFileContent} = await octokit.repos.getContent({
+        const {data: ghFileContent} = await octokit.rest.repos.getContent({
           owner,
           repo,
           path,
@@ -59,7 +59,7 @@ async function run(): Promise<void> {
         const fileContent = fs.readFileSync(path);
 
         // Commit eslint fixes
-        octokit.repos.createOrUpdateFileContents({
+        octokit.rest.repos.createOrUpdateFileContents({
           owner,
           repo,
           path,
@@ -68,14 +68,24 @@ async function run(): Promise<void> {
           content: Buffer.from(fileContent).toString('base64'),
           branch: ref,
         });
-      } catch (error) {
-        core.error(error);
-        core.setFailed(error);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          core.error(error);
+          core.setFailed(error);
+        } else {
+          console.log(error);
+          core.setFailed('catastrophe');
+        }
       }
     }
-  } catch (error) {
-    core.debug(error.stack);
-    core.setFailed(error.message);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      core.debug(error.stack || '');
+      core.setFailed(error.message);
+    } else {
+      console.log(error);
+      core.setFailed('more catastrophe');
+    }
   }
 }
 
