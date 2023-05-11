@@ -9,6 +9,7 @@ async function run(): Promise<void> {
     const {owner, repo} = github.context.repo;
     const token = core.getInput('github-token');
     const message = core.getInput('message');
+    const ref = process.env.GITHUB_HEAD_REF;
 
     if (!token) {
       core.setFailed(`GitHub token not found`);
@@ -44,7 +45,7 @@ async function run(): Promise<void> {
           owner,
           repo,
           path,
-          ref: process.env.GITHUB_HEAD_REF,
+          ref: ref,
         });
 
         if (!ghFileContent || Array.isArray(ghFileContent)) {
@@ -61,7 +62,7 @@ async function run(): Promise<void> {
           message,
           sha: ghFileContent.sha,
           content: Buffer.from(fileContent).toString('base64'),
-          branch: process.env.GITHUB_HEAD_REF,
+          branch: ref,
         });
       } catch (error) {
         core.error(error);
