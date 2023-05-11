@@ -12,7 +12,7 @@ inputs:
   message:
     description: 'The commit message to use'
     required: false
-    default: 'style(lint): Auto commit lint changes'
+    default: 'robocommit'
 runs:
   using: 'node16'
   main: 'dist/index.js'
