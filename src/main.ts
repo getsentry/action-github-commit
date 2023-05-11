@@ -16,28 +16,30 @@ async function run(): Promise<void> {
       return;
     }
 
-    const octokit = github.getOctokit(token);
+    const octokit = github.getOctokit(token); // might fail with an auth error?
 
     let gitOutput = '';
     let gitError = '';
 
-    try {
-      await exec('git', ['ls-files', '-m'], {
-        silent: true,
-        listeners: {
-          stdout: (data: Buffer) => {
-            gitOutput += data.toString();
-          },
-          stderr: (data: Buffer) => {
-            gitError += data.toString();
-          },
+    await exec('git', ['ls-files', '-m'], {
+      silent: true,
+      listeners: {
+        stdout: (data: Buffer) => {
+          gitOutput += data.toString();
         },
-      });
-    } catch {
-      core.debug('ignoring error');
-    }
+        stderr: (data: Buffer) => {
+          gitError += data.toString();
+        },
+      },
+    });
 
-    core.debug(`error?: ${gitError}`);
+    if (!gitOutput || gitError) {
+      if (!gitOutput)
+        {core.setFailed('git stdout: ∅');}
+      if (gitError)
+        {core.setFailed(`git stderr: ${gitError}`);}
+      return;
+    }
 
     const files = gitOutput.split('\n');
 
