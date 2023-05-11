@@ -9,42 +9,47 @@ async function run(): Promise<void> {
     const {owner, repo} = github.context.repo;
     const token = core.getInput('github-token');
     const message = core.getInput('message');
+    const ref = process.env.GITHUB_HEAD_REF;
 
     if (!token) {
-      core.setFailed(`GitHub token not found`);
+      core.setFailed('GitHub token not found');
       return;
     }
 
-    const octokit = github.getOctokit(token);
+    const octokit = github.getOctokit(token); // might fail with an auth error?
 
     let gitOutput = '';
     let gitError = '';
 
-    try {
-      await exec('git', ['ls-files', '-m'], {
-        silent: true,
-        listeners: {
-          stdout: (data: Buffer) => {
-            gitOutput += data.toString();
-          },
-          stderr: (data: Buffer) => {
-            gitError += data.toString();
-          },
+    await exec('git', ['ls-files', '-m'], {
+      silent: true,
+      listeners: {
+        stdout: (data: Buffer) => {
+          gitOutput += data.toString();
         },
-      });
-    } catch {}
+        stderr: (data: Buffer) => {
+          gitError += data.toString();
+        },
+      },
+    });
 
-    core.debug(`error?: ${gitError}`);
+    if (!gitOutput || gitError) {
+      if (!gitOutput)
+        {core.setFailed('git stdout: ∅');}
+      if (gitError)
+        {core.setFailed(`git stderr: ${gitError}`);}
+      return;
+    }
 
     const files = gitOutput.split('\n');
 
     for (const path of files) {
       try {
-        const {data: ghFileContent} = await octokit.repos.getContent({
+        const {data: ghFileContent} = await octokit.rest.repos.getContent({
           owner,
           repo,
           path,
-          ref: process.env.GITHUB_HEAD_REF,
+          ref,
         });
 
         if (!ghFileContent || Array.isArray(ghFileContent)) {
@@ -54,23 +59,33 @@ async function run(): Promise<void> {
         const fileContent = fs.readFileSync(path);
 
         // Commit eslint fixes
-        octokit.repos.createOrUpdateFileContents({
+        octokit.rest.repos.createOrUpdateFileContents({
           owner,
           repo,
           path,
           message,
           sha: ghFileContent.sha,
           content: Buffer.from(fileContent).toString('base64'),
-          branch: process.env.GITHUB_HEAD_REF,
+          branch: ref,
         });
-      } catch (error) {
-        core.error(error);
-        core.setFailed(error);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          core.error(error);
+          core.setFailed(error);
+        } else {
+          console.log(error);
+          core.setFailed('catastrophe');
+        }
       }
     }
-  } catch (error) {
-    core.debug(error.stack);
-    core.setFailed(error.message);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      core.debug(error.stack || '');
+      core.setFailed(error.message);
+    } else {
+      console.log(error);
+      core.setFailed('more catastrophe');
+    }
   }
 }
 
