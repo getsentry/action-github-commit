@@ -7,7 +7,7 @@
   "scripts": {
     "build": "yarn tsc",
     "format": "yarn prettier --write **/*.ts",
-    "lint": "yarn eslint src/**/*.ts",
+    "lint": "yarn eslint --fix src/**/*.ts",
     "dist": "yarn build && yarn ncc build"
   },
   "repository": {
@@ -31,6 +31,7 @@
     "@octokit/webhooks": "^7.18.1",
     "@types/node": "^12.7.12",
     "@typescript-eslint/parser": "^4.9.1",
+    "@typescript-eslint/eslint-plugin": "^5.3.1",
     "eslint": "^7.15.0",
     "eslint-config-prettier": "^7.0.0",
     "eslint-config-sentry": "^1.47.0",

@@ -12,7 +12,7 @@ async function run(): Promise<void> {
     const ref = process.env.GITHUB_HEAD_REF;
 
     if (!token) {
-      core.setFailed(`GitHub token not found`);
+      core.setFailed('GitHub token not found');
       return;
     }
 
@@ -33,7 +33,9 @@ async function run(): Promise<void> {
           },
         },
       });
-    } catch {}
+    } catch {
+      core.debug('ignoring error');
+    }
 
     core.debug(`error?: ${gitError}`);
 
@@ -45,7 +47,7 @@ async function run(): Promise<void> {
           owner,
           repo,
           path,
-          ref: ref,
+          ref,
         });
 
         if (!ghFileContent || Array.isArray(ghFileContent)) {
