@@ -43,6 +43,9 @@ async function run(): Promise<void> {
     core.debug('🐱🐱🐱🐱🐱 ^^^ gitOutput');
 
     if ((failOnEmpty && !gitOutput) || gitError) {
+      // This is a little convoluted, but if both conditions are true, we want
+      // to find out about both. If either are true, we want to bail early.
+      // NB: I haven't actually tested calling setFailed more than once. 🐭
       if (!gitOutput)
         {core.setFailed('git stdout: ∅');}
       if (gitError)
@@ -50,8 +53,10 @@ async function run(): Promise<void> {
       return;
     }
 
-    if (!gitOutput)
-      {return;}
+    if (!gitOutput) {
+      // This is a happy path early exit (failOnError is false).
+      return;
+    }
 
     const files = gitOutput.split('\n');
     const newContents = [];
