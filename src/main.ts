@@ -9,7 +9,7 @@ async function run(): Promise<void> {
     const {owner, repo} = github.context.repo;
     const token = core.getInput('github-token');
     const message = core.getInput('message') || 'Default commit message';
-    const ref = process.env.GITHUB_HEAD_REF || 'master';
+    const branchName = process.env.GITHUB_HEAD_REF || 'master';
 
     if (!token) {
       core.setFailed('GitHub token not found');
@@ -70,11 +70,12 @@ async function run(): Promise<void> {
     // and then made it as terse as I could. :shrug:
 
     const g = octokit.rest.git;
-    const {data: {object: {sha: commit_sha}}} = await g.getRef({owner, repo, ref: `heads/${ref}`});
+    const ref = `heads/${branchName}`;  // slight discrepancy w/ updateRef docs here
+    const {data: {object: {sha: commit_sha}}} = await g.getRef({owner, repo, ref});
     const {data: {tree: {sha: base_tree}}} = await g.getCommit({owner, repo, commit_sha});
     const {data: {sha: tree}} = await g.createTree({owner, repo, base_tree, tree: newContents,});
     const {data: {sha}} = await g.createCommit({owner, repo, message, tree, parents: [commit_sha]});
-    await g.updateRef({owner, repo, ref: `heads/${ref}`, sha,});  // slight discrepancy w/ docs here
+    await g.updateRef({owner, repo, ref, sha,});
 
   } catch (error: unknown) {
     if (error instanceof Error) {
