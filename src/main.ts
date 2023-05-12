@@ -37,7 +37,11 @@ async function run(): Promise<void> {
       },
     });
 
-    if (!gitOutput || gitError) {
+    core.debug('🐭🐭🐭🐭🐭 gitOutput vvv');
+    core.debug(gitOutput);
+    core.debug('🐱🐱🐱🐱🐱 ^^^ gitOutput');
+
+    if ((!gitOutput) || gitError) {
       if (!gitOutput)
         {core.setFailed('git stdout: ∅');}
       if (gitError)
@@ -45,20 +49,17 @@ async function run(): Promise<void> {
       return;
     }
 
-    core.debug('🐭🐭🐭🐭🐭');
-    core.debug(gitOutput);
-    core.debug('🐱🐱🐱🐱🐱');
-
     const files = gitOutput.split('\n');
     const newContents = [];
     for (const path of files) {
-      core.debug(`🐠🐠🐠🐠🐠 ${path}`);
+      if (!path.trim())
+        {continue}
       const fileContent = fs.readFileSync(path);
       newContents.push({
         path,
         mode: '100644' as const,
         type: 'blob' as const,
-        content: Buffer.from(fileContent).toString('base64'),
+        content: Buffer.from(fileContent).toString(),
       })
     }
 
@@ -69,11 +70,11 @@ async function run(): Promise<void> {
     // and then made it as terse as I could. :shrug:
 
     const g = octokit.rest.git;
-    const {data: {object: {sha: commit_sha}}} = await g.getRef({owner, repo, ref});
+    const {data: {object: {sha: commit_sha}}} = await g.getRef({owner, repo, ref: `heads/${ref}`});
     const {data: {tree: {sha: base_tree}}} = await g.getCommit({owner, repo, commit_sha});
     const {data: {sha: tree}} = await g.createTree({owner, repo, base_tree, tree: newContents,});
     const {data: {sha}} = await g.createCommit({owner, repo, message, tree, parents: [commit_sha]});
-    await g.updateRef({owner, repo, ref, sha,});
+    await g.updateRef({owner, repo, ref: `heads/${ref}`, sha,});  // slight discrepancy w/ docs here
 
   } catch (error: unknown) {
     if (error instanceof Error) {
