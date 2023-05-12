@@ -9,7 +9,7 @@ async function run(): Promise<void> {
     const {owner, repo} = github.context.repo;
     const token = core.getInput('github-token');
     const message = core.getInput('message') || 'Default commit message';
-    const ref = process.env.GITHUB_HEAD_REF || 'master';
+    const branchName = process.env.GITHUB_HEAD_REF || 'master';
 
     if (!token) {
       core.setFailed('GitHub token not found');
@@ -37,7 +37,11 @@ async function run(): Promise<void> {
       },
     });
 
-    if (!gitOutput || gitError) {
+    core.debug('🐭🐭🐭🐭🐭 gitOutput vvv');
+    core.debug(gitOutput);
+    core.debug('🐱🐱🐱🐱🐱 ^^^ gitOutput');
+
+    if ((!gitOutput) || gitError) {
       if (!gitOutput)
         {core.setFailed('git stdout: ∅');}
       if (gitError)
@@ -45,20 +49,17 @@ async function run(): Promise<void> {
       return;
     }
 
-    core.debug('🐭🐭🐭🐭🐭');
-    core.debug(gitOutput);
-    core.debug('🐱🐱🐱🐱🐱');
-
     const files = gitOutput.split('\n');
     const newContents = [];
     for (const path of files) {
-      core.debug(`🐠🐠🐠🐠🐠 ${path}`);
+      if (!path.trim())
+        {continue}
       const fileContent = fs.readFileSync(path);
       newContents.push({
         path,
         mode: '100644' as const,
         type: 'blob' as const,
-        content: Buffer.from(fileContent).toString('base64'),
+        content: Buffer.from(fileContent).toString(),
       })
     }
 
@@ -69,6 +70,7 @@ async function run(): Promise<void> {
     // and then made it as terse as I could. :shrug:
 
     const g = octokit.rest.git;
+    const ref = `heads/${branchName}`;  // slight discrepancy w/ updateRef docs here
     const {data: {object: {sha: commit_sha}}} = await g.getRef({owner, repo, ref});
     const {data: {tree: {sha: base_tree}}} = await g.getCommit({owner, repo, commit_sha});
     const {data: {sha: tree}} = await g.createTree({owner, repo, base_tree, tree: newContents,});

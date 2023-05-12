@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "description": "commit to GitHub using the API",
-  "main": "dist/index.js",
+  "main": "lib/main.js",
   "scripts": {
     "build": "yarn tsc",
     "format": "yarn prettier --write **/*.ts",
