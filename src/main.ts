@@ -9,6 +9,7 @@ async function run(): Promise<void> {
     const {owner, repo} = github.context.repo;
     const token = core.getInput('github-token');
     const message = core.getInput('message') || 'Default commit message';
+    const failOnEmpty = core.getInput('fail-on-empty') || 'false';
     const branchName = process.env.GITHUB_HEAD_REF || 'master';
 
     if (!token) {
@@ -41,13 +42,16 @@ async function run(): Promise<void> {
     core.debug(gitOutput);
     core.debug('🐱🐱🐱🐱🐱 ^^^ gitOutput');
 
-    if ((!gitOutput) || gitError) {
+    if ((failOnEmpty && !gitOutput) || gitError) {
       if (!gitOutput)
         {core.setFailed('git stdout: ∅');}
       if (gitError)
         {core.setFailed(`git stderr: ${gitError}`);}
       return;
     }
+
+    if (!gitOutput)
+      {return;}
 
     const files = gitOutput.split('\n');
     const newContents = [];
