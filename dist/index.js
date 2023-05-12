@@ -52,6 +52,7 @@ function run() {
             const { owner, repo } = github.context.repo;
             const token = core.getInput('github-token');
             const message = core.getInput('message') || 'Default commit message';
+            const failOnEmpty = core.getInput('fail-on-empty') || 'false';
             const branchName = process.env.GITHUB_HEAD_REF || 'master';
             if (!token) {
                 core.setFailed('GitHub token not found');
@@ -76,13 +77,20 @@ function run() {
             core.debug('🐭🐭🐭🐭🐭 gitOutput vvv');
             core.debug(gitOutput);
             core.debug('🐱🐱🐱🐱🐱 ^^^ gitOutput');
-            if ((!gitOutput) || gitError) {
+            if ((failOnEmpty && !gitOutput) || gitError) {
+                // This is a little convoluted, but if both conditions are true, we want
+                // to find out about both. If either are true, we want to bail early.
+                // NB: I haven't actually tested calling setFailed more than once. 🐭
                 if (!gitOutput) {
                     core.setFailed('git stdout: ∅');
                 }
                 if (gitError) {
                     core.setFailed(`git stderr: ${gitError}`);
                 }
+                return;
+            }
+            if (!gitOutput) {
+                // This is a happy path early exit (failOnError is false).
                 return;
             }
             const files = gitOutput.split('\n');
