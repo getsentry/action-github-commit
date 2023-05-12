@@ -52,7 +52,7 @@ function run() {
             const { owner, repo } = github.context.repo;
             const token = core.getInput('github-token');
             const message = core.getInput('message') || 'Default commit message';
-            const ref = process.env.GITHUB_HEAD_REF || 'master';
+            const branchName = process.env.GITHUB_HEAD_REF || 'master';
             if (!token) {
                 core.setFailed('GitHub token not found');
                 return;
@@ -104,11 +104,12 @@ function run() {
             // Docs at docs.github.com/en/rest/git/trees but tbh I just asked ChatGPT
             // and then made it as terse as I could. :shrug:
             const g = octokit.rest.git;
-            const { data: { object: { sha: commit_sha } } } = yield g.getRef({ owner, repo, ref: `heads/${ref}` });
+            const ref = `heads/${branchName}`; // slight discrepancy w/ updateRef docs here
+            const { data: { object: { sha: commit_sha } } } = yield g.getRef({ owner, repo, ref });
             const { data: { tree: { sha: base_tree } } } = yield g.getCommit({ owner, repo, commit_sha });
             const { data: { sha: tree } } = yield g.createTree({ owner, repo, base_tree, tree: newContents, });
             const { data: { sha } } = yield g.createCommit({ owner, repo, message, tree, parents: [commit_sha] });
-            yield g.updateRef({ owner, repo, ref: `heads/${ref}`, sha, }); // slight discrepancy w/ docs here
+            yield g.updateRef({ owner, repo, ref, sha, });
         }
         catch (error) {
             if (error instanceof Error) {
