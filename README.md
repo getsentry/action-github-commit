@@ -10,10 +10,7 @@ Note: You may want to use a non-default GitHub token (e.g. not the GH Action tok
 
 ### Inputs
 
-| input | required | description |
-| ----- | -------- | ----------- |
-| `github-token` | no | The GitHub Actions token e.g. `secrets.GITHUB_TOKEN` (See note above) |
-| `message` | no | The commit message to use |
+[Use the source](https://github.com/getsentry/action-github-commit/blob/main/action.yml).
 
 ## Installation
 
@@ -21,5 +18,5 @@ Add the following to your workflow config
 
 ```yaml
     - name: Commit changes
-      uses: getsentry/action-github-commit@v1
+      uses: getsentry/action-github-commit@main
 ```
