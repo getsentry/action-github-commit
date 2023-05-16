@@ -54,9 +54,3 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         message: '❌ This commit should not exist. If it does you have a test failure.'
-
-    - name: 'Re-run current action'
-      uses: ./
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        message: '❌ This commit should not exist. If it does you have a test failure.'
