@@ -13,11 +13,44 @@ jobs:
         yarn install
         yarn dist
 
-    - name: exercise multifile behavior
-      run: git rev-parse @ > latest-sha.txt
+    - name: Ensure we always have at least one thing to commit
+      run: git rev-parse @ > test-fixture.txt
 
-    - name: Use current action
+
+    # Now exercise ourselves.
+
+    # The first run should at least pick up the test-fixture.txt change. If
+    # there are also dist/index.js changes then those will be committed, and in
+    # that case we're a) exercising the multifile commit scenario, and b) doing
+    # "real work" (since we need that change in the repo for the action to
+    # function properly when deployed).
+
+    - name: Run current action
       uses: ./
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         message: '[getsentry/action-github-commit] Auto commit build artifact'
+
+    - name: Get to a clean slate locally with latest changes
+      # In the previous step we pushed using the GitHub API, so now update
+      # locally using the git cli.
+      run: |
+        echo '◢ --------------------------'
+        git status
+        echo '█ --------------------------'
+        git reset --hard
+        git clean --force
+        git fetch --all
+        git checkout ${GITHUB_HEAD_REF}
+        echo '█ --------------------------'
+        git status
+        echo '◥ --------------------------'
+
+
+    # The next run should be a no-op since there are now no changes.
+
+    - name: 'Re-run current action'
+      uses: ./
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        message: '❌ This commit should not exist. If it does you have a test failure.'
