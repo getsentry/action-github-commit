@@ -47,30 +47,15 @@ jobs:
         echo '◥ --------------------------'
 
 
-    # Subsequent runs should be a no-op since there are now no changes.
-    # Whether or not that is considered a failure is configurable; test both.
+    # The next run should be a no-op since there are now no changes.
 
-    - name: 'Re-run current action - test fail-on-empty=true'
-      id: test-fail-on-empty
-      continue-on-error: true
+    - name: 'Re-run current action'
       uses: ./
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         message: '❌ This commit should not exist. If it does you have a test failure.'
-        fail-on-empty: true
 
-    - name: 'Re-run current action - test fail-on-empty=true - check result'
-      if: "always() && steps.test-fail-on-empty.outcome != 'failure'"
-      # `.outcome` is "[t]he result of a completed step before continue-on-error
-      # is applied."
-      #   docs.github.com/en/actions/learn-github-actions/contexts#steps-context
-      uses: actions/github-script@v3
-      with:
-        script: |
-          core.setFailed("fail-on-empty=true didn't result in failure")
-
-    - name: 'Re-run current action - test fail-on-empty=false (default)'
-      if: "always() && steps.test-fail-on-empty.outcome == 'failure'"
+    - name: 'Re-run current action'
       uses: ./
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
