@@ -52,7 +52,7 @@ function run() {
             const { owner, repo } = github.context.repo;
             const token = core.getInput('github-token');
             const message = core.getInput('message') || 'Default commit message';
-            const failOnEmpty = core.getInput('fail-on-empty') || 'false';
+            const failOnEmpty = (core.getInput('fail-on-empty') || 'false') === 'true';
             const branchName = process.env.GITHUB_HEAD_REF || 'master';
             if (!token) {
                 core.setFailed('GitHub token not found');
