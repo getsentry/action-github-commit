@@ -18,5 +18,5 @@ Add the following to your workflow config
 
 ```yaml
     - name: Commit changes
-      uses: getsentry/action-github-commit@main
+      uses: getsentry/action-github-commit@v2.0.0
 ```
