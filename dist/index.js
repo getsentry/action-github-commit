@@ -103,11 +103,17 @@ function run() {
             // and then made it as terse as I could. :shrug:
             const g = octokit.rest.git;
             const ref = `heads/${branchName}`; // slight discrepancy w/ updateRef docs here
-            const { data: { object: { sha: commit_sha } } } = yield g.getRef({ owner, repo, ref });
-            const { data: { tree: { sha: base_tree } } } = yield g.getCommit({ owner, repo, commit_sha });
-            const { data: { sha: tree } } = yield g.createTree({ owner, repo, base_tree, tree: newContents, });
-            const { data: { sha } } = yield g.createCommit({ owner, repo, message, tree, parents: [commit_sha] });
-            yield g.updateRef({ owner, repo, ref, sha, });
+            const { data: { object: { sha: commit_sha }, }, } = yield g.getRef({ owner, repo, ref });
+            const { data: { tree: { sha: base_tree }, }, } = yield g.getCommit({ owner, repo, commit_sha });
+            const { data: { sha: tree }, } = yield g.createTree({ owner, repo, base_tree, tree: newContents });
+            const { data: { sha }, } = yield g.createCommit({
+                owner,
+                repo,
+                message,
+                tree,
+                parents: [commit_sha],
+            });
+            yield g.updateRef({ owner, repo, ref, sha });
         }
         catch (error) {
             if (error instanceof Error) {
