@@ -18,7 +18,6 @@ async function run(): Promise<void> {
 
     const octokit = github.getOctokit(token); // might fail with an auth error?
 
-
     // Find updated file contents using the `git` cli.
     // ===============================================
 
@@ -42,7 +41,7 @@ async function run(): Promise<void> {
     core.debug('🐱🐱🐱🐱🐱 ^^^ gitOutput');
 
     if (!gitOutput) {
-      return;  // This action is a no-op if there are no changes.
+      return; // This action is a no-op if there are no changes.
     }
     if (gitError) {
       core.setFailed(`git stderr: ${gitError}`);
@@ -52,17 +51,17 @@ async function run(): Promise<void> {
     const files = gitOutput.split('\n');
     const newContents = [];
     for (const path of files) {
-      if (!path.trim())
-        {continue}
+      if (!path.trim()) {
+        continue;
+      }
       const fileContent = fs.readFileSync(path);
       newContents.push({
         path,
         mode: '100644' as const,
         type: 'blob' as const,
         content: Buffer.from(fileContent).toString(),
-      })
+      });
     }
-
 
     // Do a dance with the API.
     // ========================
@@ -70,13 +69,30 @@ async function run(): Promise<void> {
     // and then made it as terse as I could. :shrug:
 
     const g = octokit.rest.git;
-    const ref = `heads/${branchName}`;  // slight discrepancy w/ updateRef docs here
-    const {data: {object: {sha: commit_sha}}} = await g.getRef({owner, repo, ref});
-    const {data: {tree: {sha: base_tree}}} = await g.getCommit({owner, repo, commit_sha});
-    const {data: {sha: tree}} = await g.createTree({owner, repo, base_tree, tree: newContents,});
-    const {data: {sha}} = await g.createCommit({owner, repo, message, tree, parents: [commit_sha]});
-    await g.updateRef({owner, repo, ref, sha,});
-
+    const ref = `heads/${branchName}`; // slight discrepancy w/ updateRef docs here
+    const {
+      data: {
+        object: {sha: commit_sha},
+      },
+    } = await g.getRef({owner, repo, ref});
+    const {
+      data: {
+        tree: {sha: base_tree},
+      },
+    } = await g.getCommit({owner, repo, commit_sha});
+    const {
+      data: {sha: tree},
+    } = await g.createTree({owner, repo, base_tree, tree: newContents});
+    const {
+      data: {sha},
+    } = await g.createCommit({
+      owner,
+      repo,
+      message,
+      tree,
+      parents: [commit_sha],
+    });
+    await g.updateRef({owner, repo, ref, sha});
   } catch (error: unknown) {
     if (error instanceof Error) {
       core.error(error.stack || '');
