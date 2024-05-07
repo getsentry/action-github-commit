@@ -103,7 +103,9 @@ function run() {
             // and then made it as terse as I could. :shrug:
             const g = octokit.rest.git;
             const ref = `heads/${branchName}`; // slight discrepancy w/ updateRef docs here
+            core.debug(`fetching ref ${JSON.stringify({ owner, repo, ref })}`);
             const { data: { object: { sha: commit_sha }, }, } = yield g.getRef({ owner, repo, ref });
+            core.debug(`fetching commit ${JSON.stringify({ owner, repo, commit_sha })}`);
             const { data: { tree: { sha: base_tree }, }, } = yield g.getCommit({ owner, repo, commit_sha });
             const { data: { sha: tree }, } = yield g.createTree({ owner, repo, base_tree, tree: newContents });
             const { data: { sha }, } = yield g.createCommit({
