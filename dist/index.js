@@ -89,7 +89,7 @@ function run() {
                 if (!path.trim()) {
                     continue;
                 }
-                try {
+                if (fs_1.default.existsSync(path)) {
                     const fileContent = fs_1.default.readFileSync(path);
                     newContents.push({
                         path,
@@ -98,7 +98,7 @@ function run() {
                         content: Buffer.from(fileContent).toString(),
                     });
                 }
-                catch (error) {
+                else {
                     core.debug(`File removed: ${path}`);
                     newContents.push({
                         path,
