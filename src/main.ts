@@ -68,7 +68,7 @@ async function run(): Promise<void> {
           path,
           mode: '100644' as const,
           type: 'blob' as const,
-          content: '',
+          sha: null,
         })
       }
     }
