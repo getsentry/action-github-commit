@@ -54,7 +54,7 @@ async function run(): Promise<void> {
       if (!path.trim()) {
         continue;
       }
-      try {
+      if (fs.existsSync(path)) {
         const fileContent = fs.readFileSync(path);
         newContents.push({
           path,
@@ -62,7 +62,7 @@ async function run(): Promise<void> {
           type: 'blob' as const,
           content: Buffer.from(fileContent).toString(),
         });
-      } catch (error) {
+      } else {
         core.debug(`File removed: ${path}`);
         newContents.push({
           path,
