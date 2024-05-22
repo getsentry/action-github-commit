@@ -54,13 +54,17 @@ async function run(): Promise<void> {
       if (!path.trim()) {
         continue;
       }
-      const fileContent = fs.readFileSync(path);
-      newContents.push({
-        path,
-        mode: '100644' as const,
-        type: 'blob' as const,
-        content: Buffer.from(fileContent).toString(),
-      });
+      try {
+        const fileContent = fs.readFileSync(path);
+        newContents.push({
+          path,
+          mode: '100644' as const,
+          type: 'blob' as const,
+          content: Buffer.from(fileContent).toString(),
+        });
+      } catch (error) {
+        core.debug(`File not found or removed: ${path}, skipping...`);
+      }
     }
 
     // Do a dance with the API.
