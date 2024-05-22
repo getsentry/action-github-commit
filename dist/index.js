@@ -99,7 +99,13 @@ function run() {
                     });
                 }
                 catch (error) {
-                    core.debug(`File not found or removed: ${path}, skipping...`);
+                    core.debug(`File removed: ${path}`);
+                    newContents.push({
+                        path,
+                        mode: '100644',
+                        type: 'blob',
+                        content: '',
+                    });
                 }
             }
             // Do a dance with the API.
