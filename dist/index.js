@@ -89,13 +89,24 @@ function run() {
                 if (!path.trim()) {
                     continue;
                 }
-                const fileContent = fs_1.default.readFileSync(path);
-                newContents.push({
-                    path,
-                    mode: '100644',
-                    type: 'blob',
-                    content: Buffer.from(fileContent).toString(),
-                });
+                if (fs_1.default.existsSync(path)) {
+                    const fileContent = fs_1.default.readFileSync(path);
+                    newContents.push({
+                        path,
+                        mode: '100644',
+                        type: 'blob',
+                        content: Buffer.from(fileContent).toString(),
+                    });
+                }
+                else {
+                    core.debug(`File removed: ${path}`);
+                    newContents.push({
+                        path,
+                        mode: '100644',
+                        type: 'blob',
+                        sha: null,
+                    });
+                }
             }
             // Do a dance with the API.
             // ========================

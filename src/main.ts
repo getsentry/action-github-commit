@@ -54,13 +54,23 @@ async function run(): Promise<void> {
       if (!path.trim()) {
         continue;
       }
-      const fileContent = fs.readFileSync(path);
-      newContents.push({
-        path,
-        mode: '100644' as const,
-        type: 'blob' as const,
-        content: Buffer.from(fileContent).toString(),
-      });
+      if (fs.existsSync(path)) {
+        const fileContent = fs.readFileSync(path);
+        newContents.push({
+          path,
+          mode: '100644' as const,
+          type: 'blob' as const,
+          content: Buffer.from(fileContent).toString(),
+        });
+      } else {
+        core.debug(`File removed: ${path}`);
+        newContents.push({
+          path,
+          mode: '100644' as const,
+          type: 'blob' as const,
+          sha: null,
+        })
+      }
     }
 
     // Do a dance with the API.
