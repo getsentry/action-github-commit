@@ -89,13 +89,18 @@ function run() {
                 if (!path.trim()) {
                     continue;
                 }
-                const fileContent = fs_1.default.readFileSync(path);
-                newContents.push({
-                    path,
-                    mode: '100644',
-                    type: 'blob',
-                    content: Buffer.from(fileContent).toString(),
-                });
+                try {
+                    const fileContent = fs_1.default.readFileSync(path);
+                    newContents.push({
+                        path,
+                        mode: '100644',
+                        type: 'blob',
+                        content: Buffer.from(fileContent).toString(),
+                    });
+                }
+                catch (error) {
+                    core.debug(`File not found or removed: ${path}, skipping...`);
+                }
             }
             // Do a dance with the API.
             // ========================
