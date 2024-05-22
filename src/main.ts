@@ -63,7 +63,13 @@ async function run(): Promise<void> {
           content: Buffer.from(fileContent).toString(),
         });
       } catch (error) {
-        core.debug(`File not found or removed: ${path}, skipping...`);
+        core.debug(`File removed: ${path}`);
+        newContents.push({
+          path,
+          mode: '100644' as const,
+          type: 'blob' as const,
+          content: '',
+        })
       }
     }
 
