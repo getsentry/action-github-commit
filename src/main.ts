@@ -9,7 +9,8 @@ async function run(): Promise<void> {
     const {owner, repo} = github.context.repo;
     const token = core.getInput('github-token');
     const message = core.getInput('message') || 'Default commit message';
-    const branchName = process.env.GITHUB_HEAD_REF || 'master';
+    const mainBranch = core.getInput('main-branch') || 'master';
+    const branchName = process.env.GITHUB_HEAD_REF || mainBranch;
 
     if (!token) {
       core.setFailed('GitHub token not found');
