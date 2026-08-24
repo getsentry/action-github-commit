@@ -28,12 +28,14 @@ jobs:
     # function properly when deployed).
 
     - name: Run current action
+      if: github.actor != 'dependabot[bot]'
       uses: ./
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         message: '[getsentry/action-github-commit] Auto commit build artifact'
 
     - name: Get to a clean slate locally with latest changes
+      if: github.actor != 'dependabot[bot]'
       # In the previous step we pushed using the GitHub API, so now update
       # locally using the git cli.
       run: |
@@ -52,6 +54,7 @@ jobs:
     # The next run should be a no-op since there are now no changes.
 
     - name: 'Re-run current action'
+      if: github.actor != 'dependabot[bot]'
       uses: ./
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
